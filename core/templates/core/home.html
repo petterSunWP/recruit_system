@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RecruitMe - Home</title>
+    <!-- ✅ Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: url('/static/images/bg.webp') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            min-height: 100vh;
+        }
+        .btn-job {
+            background-color: white;
+            color: black;
+        }
+        .btn-seeker {
+            background-color: red;
+            color: white;
+        }
+        .btn-employer {
+            background-color: yellowgreen;
+            color: white;
+        }
+        .modal-dialog {
+            max-width: 500px;
+            margin: auto;
+        }
+        .modal-content {
+            padding: 30px;
+            border-radius: 15px;
+        }
+        .modal-title {
+            font-weight: bold;
+            color: black;
+        }
+        .form-control::placeholder {
+            color: #bbb;
+        }
+        .btn-login {
+            background-color: red;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            font-size: 1.1em;
+            border-radius: 30px;
+        }
+        .btn-login:hover {
+            background-color: red;
+            color: black;
+        }
+        .footer-link {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.95em;
+            color: black;
+        }
+        .footer-link a {
+            color: red;
+            text-decoration: underline;
+        }
+        .form-label {
+            font-size: 0.95em;
+            color: black;
+            font-weight: 500;
+        }
+        .company-fields {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="overlay d-flex flex-column justify-content-center align-items-center text-center p-5">
+    <h1 class="display-3 mb-4">Welcome to RecruitMe</h1>
+    <p class="lead mb-5">Find your future or your next great hire.</p>
+    <div class="d-flex flex-column gap-3">
+        <button class="btn btn-job btn-lg" data-bs-toggle="modal" data-bs-target="#jobModal">Find a Job</button>
+        <button class="btn btn-seeker btn-lg" data-bs-toggle="modal" data-bs-target="#jobseekerModal">Jobseeker Sign In</button>
+        <button class="btn btn-employer btn-lg" data-bs-toggle="modal" data-bs-target="#employerModal">Employer Sign In</button>
+    </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal fade" id="jobModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <h5 class="modal-title mb-3">Job Browser</h5>
+            <p>Click below to start exploring jobs</p>
+            <a href="/jobseeker/" class="btn btn-primary">Browse Jobs</a>
+        </div>
+    </div>
+</div>
+
+<!-- Jobseeker Modal -->
+<div class="modal fade" id="jobseekerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <h5 class="modal-title">Jobseeker Login</h5>
+            <div class="modal-body">
+                <label class="form-label">Username<span class="text-danger">*</span></label>
+                <input id="js-username" type="text" class="form-control mb-2" placeholder="Enter username">
+                <label class="form-label">Password<span class="text-danger">*</span></label>
+                <input id="js-password" type="password" class="form-control mb-4" placeholder="Enter password">
+                <button onclick="loginUser('jobseeker')" class="btn btn-login w-100">Login</button>
+                <div class="footer-link">Don't have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employer Modal -->
+<div class="modal fade" id="employerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <h5 class="modal-title">Employer Login</h5>
+            <div class="modal-body">
+                <label class="form-label">Username<span class="text-danger">*</span></label>
+                <input id="em-username" type="text" class="form-control mb-2" placeholder="Enter username">
+                <label class="form-label">Password<span class="text-danger">*</span></label>
+                <input id="em-password" type="password" class="form-control mb-4" placeholder="Enter password">
+                <button onclick="loginUser('company')" class="btn btn-login w-100">Login</button>
+                <div class="footer-link">Don't have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <h5 class="modal-title">Register</h5>
+            <div class="modal-body">
+                <input id="reg-username" type="text" class="form-control mb-2" placeholder="Username">
+                <input id="reg-email" type="email" class="form-control mb-2" placeholder="Email">
+                <input id="reg-password" type="password" class="form-control mb-2" placeholder="Password">
+                <select id="reg-role" class="form-select mb-3" onchange="toggleCompanyFields()">
+                    <option value="jobseeker">Jobseeker</option>
+                    <option value="company">Company</option>
+                </select>
+                <div id="company-extra" class="company-fields">
+                    <input id="reg-company-name" type="text" class="form-control mb-2" placeholder="Company Name">
+                    <input id="reg-address" type="text" class="form-control mb-3" placeholder="Company Address">
+                </div>
+                <button onclick="registerUser()" class="btn btn-primary w-100">Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCompanyFields() {
+        const role = document.getElementById('reg-role').value;
+        const companyFields = document.getElementById('company-extra');
+        companyFields.style.display = role === 'company' ? 'block' : 'none';
+    }
+
+    async function loginUser(role) {
+        const username = document.getElementById(role === 'jobseeker' ? 'js-username' : 'em-username').value;
+        const password = document.getElementById(role === 'jobseeker' ? 'js-password' : 'em-password').value;
+
+        const res = await fetch('/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ username, password, role })
+        });
+
+        const data = await res.json();
+        if (data.success) window.location.href = data.redirect;
+        else alert(data.message);
+    }
+
+    async function registerUser() {
+        const registerUrl = "/register/";
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const role = document.getElementById('reg-role').value;
+
+        const company_name = document.getElementById('reg-company-name')?.value || "";
+        const address = document.getElementById('reg-address')?.value || "";
+
+        const res = await fetch(registerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ username, email, password, role, company_name, address })
+        });
+
+        const data = await res.json();
+        if (data.success) window.location.href = data.redirect;
+        else alert(data.message);
+    }
+
+    function getCSRFToken() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+</script>
+</body>
+</html>

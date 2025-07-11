@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobseeker Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background-color: #fff;
+      border-right: 1px solid #eee;
+    }
+    .sidebar .nav-link.active {
+      background: none;
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .sidebar .nav-link {
+      color: #333;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar {
+      background-color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    .btn-find-job {
+      background-color: #ef4444;
+      color: white;
+      font-weight: bold;
+    }
+    .form-section {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar p-3">
+    <h5 class="fw-bold mb-4">RecruitMe</h5>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" onclick="showSection('info')"><i class="bi bi-person-circle"></i> My Info</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showSection('applications')"><i class="bi bi-check-circle-fill text-danger"></i> Applications</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showSection('messages')"><i class="bi bi-bell-fill text-danger"></i> Messages</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/jobseeker/logout/"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Area -->
+  <div class="flex-grow-1">
+    <!-- Topbar -->
+    <div class="topbar">
+      <h5 class="m-0">My Profile</h5>
+      <button class="btn btn-find-job" id="find-job-btn" onclick=findJob()>Find Job</button>
+    </div>
+
+    <!-- Content -->
+    <div class="container mt-4">
+      <div id="info-section" class="form-section">
+        <h4 class="mb-4">My Info</h4>
+        <form id="info-form" enctype="multipart/form-data">
+          <input type="hidden" id="user-id">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Name</label>
+              <input type="text" id="name" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Age</label>
+              <input type="number" id="age" class="form-control">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">University</label>
+              <input type="text" id="university" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Major</label>
+              <input type="text" id="major" class="form-control">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Upload CV</label>
+            <input type="file" id="cv-link" name="cv" class="form-control">
+            <div id="cv-preview" class="mt-2"></div> <!-- 用于展示简历链接 -->
+          </div>
+          <button type="submit" class="btn btn-danger">Save</button>
+        </form>
+      </div>
+
+      <div id="applications-section" class="form-section d-none">
+        <h4 class="mb-3">Job Applications</h4>
+        <p>Coming soon...</p>
+      </div>
+
+      <div id="messages-section" class="form-section d-none">
+        <h4 class="mb-3">Messages</h4>
+        <p>Coming soon...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showSection(section) {
+    document.getElementById('info-section').classList.add('d-none');
+    document.getElementById('applications-section').classList.add('d-none');
+    document.getElementById('messages-section').classList.add('d-none');
+    document.getElementById(`${section}-section`).classList.remove('d-none');
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.getAttribute('onclick') === `showSection('${section}')`) {
+        link.classList.add('active');
+      }
+    });
+
+    if(section == 'applications'){
+      loadMyApplications();
+    }
+    if (section === 'messages') {
+      loadMessages();
+    }
+
+  }
+
+  async function loadInfo() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    if (!userId) return;
+
+    document.getElementById('user-id').value = userId;
+
+    const res = await fetch(`/jobseeker/info/?user_id=${userId}`);
+    if (!res.ok) return;
+
+    const data = await res.json();
+    document.getElementById('name').value = data.name || '';
+    document.getElementById('age').value = data.age || '';
+    document.getElementById('university').value = data.university || '';
+    document.getElementById('major').value = data.major || '';
+    // CV Link file cannot be pre-filled in input type="file"
+    const cvPreview = document.getElementById('cv-preview');
+    if (data.cv_link) {
+      cvPreview.innerHTML = `<a href="${data.cv_link}" target="_blank" class="btn btn-outline-primary btn-sm">View Uploaded CV</a>`;
+    } else {
+      cvPreview.innerHTML = '<small class="text-muted">No CV uploaded</small>';
+    }
+  }
+
+  document.getElementById('info-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('user_id', document.getElementById('user-id').value);
+    formData.append('name', document.getElementById('name').value);
+    formData.append('age', document.getElementById('age').value);
+    formData.append('university', document.getElementById('university').value);
+    formData.append('major', document.getElementById('major').value);
+    formData.append('cv', document.getElementById('cv-link').files[0]);
+
+    const res = await fetch('/jobseeker/info/', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await res.json();
+   if (result.success) {
+  alert('Info saved successfully!');
+
+  // ✅ 如果返回包含 cv_link，则刷新按钮
+  if (result.cv_link) {
+      document.getElementById('cv-preview').innerHTML = `
+        <a href="${result.cv_link}?t=${Date.now()}" target="_blank" class="btn btn-outline-primary btn-sm">
+          View Uploaded CV
+        </a>`;
+    }
+  }
+
+    else alert(result.message || 'Failed to save.');
+  });
+
+  window.onload = loadInfo;
+
+  function findJob(){
+    document.getElementById('find-job-btn').addEventListener('click', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user_id');
+      window.location.href = `/jobseeker/jobs/?user_id=${userId}`;
+    });
+
+  }
+
+  async function loadMyApplications() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get('user_id');
+  const res = await fetch(`/jobseeker/my-applications/?user_id=${userId}`);
+  const data = await res.json();
+
+  const container = document.getElementById('applications-section');
+  container.innerHTML = '';
+
+  if (!data.jobs || data.jobs.length === 0) {
+    container.innerHTML = "<p class='text-muted text-center'>No applications found.</p>";
+    return;
+  }
+
+  renderList(data, container);
+}
+
+function renderList(data, container) {
+  container.innerHTML = '';
+
+  data.jobs.forEach(job => {
+    const jobCard = document.createElement('div');
+    jobCard.className = 'bg-white p-4 rounded shadow-sm mb-4';
+    jobCard.innerHTML = `
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger"></i> ${job.location}</span>
+        <span class="text-muted">Start: ${job.start_date}</span>
+      </div>
+      <h5 class="text-danger fw-bold text-center">${job.title}</h5>
+      <p class="text-center text-muted mb-1">${job.category}</p>
+      <p class="text-center"><strong>Wage:</strong> $${job.hourly_wage.toFixed(2)} / hr</p>
+      <p class="text-muted">${job.description}</p>
+
+      <div class="mt-3">
+        <strong>Skills:</strong>
+        <ul class="list-unstyled mb-2">
+          ${job.skills.map(s => `<li>✔ ${s}</li>`).join('')}
+        </ul>
+
+        <strong>Requirements:</strong>
+        <ul class="list-unstyled mb-2">
+          ${job.requirements.map(r => `<li>✔ ${r}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+
+    container.appendChild(jobCard);
+  });
+}
+async function loadMessages() {
+  const userId = new URLSearchParams(window.location.search).get("user_id");
+  const res = await fetch(`/jobseeker/messages/?user_id=${userId}`);
+  const data = await res.json();
+  const container = document.getElementById('messages-section');
+  container.innerHTML = '';
+
+  if (!data.messages || data.messages.length === 0) {
+    container.innerHTML = "<p class='text-muted'>No updates yet.</p>";
+    return;
+  }
+
+  data.messages.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'border-bottom mb-3 pb-2';
+    let content = `<strong>message</strong><br/>`;
+
+    if (msg.status === 'interview') {
+      content += `<span class="text-success">Interview scheduled at ${msg.interview_time}</span><br/>`;
+      content += `<em>${msg.interview_note || 'No additional notes'}</em>`;
+    } else if (msg.status === 'rejected') {
+      content += `<span class="text-danger">Unfortunately, you were not selected.</span>`;
+    }
+
+    div.innerHTML = content;
+    container.appendChild(div);
+  });
+}
+
+
+</script>
+</body>
+</html>
