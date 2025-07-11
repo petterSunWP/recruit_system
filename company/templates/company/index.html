@@ -252,8 +252,10 @@ document.querySelector('.btn-post').addEventListener('click', () => {
   async function loadJobs() {
     const search = document.getElementById('searchInput').value;
     const status = document.getElementById('statusFilter').value;
+    const userId = new URLSearchParams(window.location.search).get('user_id');
 
-    const res = await fetch(`/company/jobs/?search=${search}&status=${status}`);
+    
+    const res = await fetch(`/company/jobs/?user_id=${userId}&search=${search}&status=${status}`);
     const data = await res.json();
     const container = document.getElementById('jobList');
 

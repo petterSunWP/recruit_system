@@ -9,10 +9,6 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth import logout
 import json
 from django.views.decorators.csrf import csrf_exempt
-
-from django.db.models import Q
-from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
 # Create your views here.
 def index(request):
     
@@ -80,71 +76,37 @@ def post_job(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
 
-@require_GET
+
 def company_jobs(request):
-    search = request.GET.get('search', '').strip()
-    status = request.GET.get('status', '').strip()
-    page = int(request.GET.get('page', 1))
-    page_size = int(request.GET.get('page_size', 10))
-    
-    # 查询并优化N+1
-    jobs = JobInfo.objects.select_related('location').all()
+    user_id = request.GET.get('user_id')
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
 
-    # 组合条件
-    filters = Q()
-    if search:
-        filters &= Q(title__icontains=search)
-    if status:
-        filters &= Q(status=status)
-    jobs = jobs.filter(filters)
-    
-    # 分页
-    paginator = Paginator(jobs.order_by('-created_at'), page_size)
+    if not user_id:
+        return JsonResponse({'error': 'Missing user_id'}, status=400)
+
     try:
-        jobs_page = paginator.page(page)
-    except EmptyPage:
-        jobs_page = []
+        company = Company.objects.get(user_id=user_id)
+    except Company.DoesNotExist:
+        return JsonResponse({'error': 'Company not found'}, status=404)
 
-    # 组装数据
-    job_list = [{
-        "id": job.id,
-        "title": job.title,
-        "status": job.status,
-        "location": job.location.name if job.location else 'N/A',
-    } for job in jobs_page]
+    jobs = JobInfo.objects.filter(company_id=company.id)
 
-    return JsonResponse({
-        'jobs': job_list,
-        'total': paginator.count,
-        'num_pages': paginator.num_pages,
-        'current_page': page,
-    })
+    if search:
+        jobs = jobs.filter(title__icontains=search)
+    if status:
+        jobs = jobs.filter(status=status)
 
-# @require_GET
-# def company_jobs(request):
-#     search = request.GET.get('search', '')
-#     status = request.GET.get('status', '')
+    job_list = []
+    for job in jobs.order_by('-created_at'):
+        job_list.append({
+            "id": job.id,
+            'title': job.title,
+            'status': job.status,
+            'location': job.location.name if job.location else 'N/A',
+        })
 
-#     # 过滤职位
-#     jobs = JobInfo.objects.all()
-
-#     if search:
-#         jobs = jobs.filter(title__icontains=search)
-#     if status:
-#         jobs = jobs.filter(status=status)
-
-#     # 返回结果
-#     job_list = []
-#     for job in jobs.order_by('-created_at'):
-#         job_list.append({
-#             "id": job.id,  
-#             'title': job.title,
-#             'status': job.status,
-#             'location': job.location.name if job.location else 'N/A',
-#         })
-
-#     return JsonResponse({'jobs': job_list})
-
+    return JsonResponse({'jobs': job_list})
 @require_POST
 def toggle_job_status(request, job_id):
     try:
