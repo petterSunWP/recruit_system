@@ -4,5 +4,588 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employer Dashboard - RecruitMe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body { background-color: #f8f9fa; }
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background-color: #fff;
+      border-right: 1px solid #eee;
+    }
+    .sidebar .nav-link.active {
+      background: linear-gradient(to right, #ef4444, #dc2626);
+      color: white;
+      border-radius: 0.5rem;
+    }
+    .sidebar .nav-link {
+      color: #444;
+      font-weight: 500;
+    }
+    .topbar {
+      background-color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    .btn-post {
+      background-color: #ef4444;
+      color: white;
+      font-weight: bold;
+    }
+    .job-box {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .dropdown-toggle::after {
+      display: none;
+    }
+    .profile-btn {
+      background-color: #fdecea;
+      border: 2px solid #fca5a5;
+      color: #dc2626;
+      font-weight: bold;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .dropdown-menu {
+      min-width: 220px;
+      padding: 1rem;
+    }
+  </style>
 </head>
+<body>
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar p-3">
+    <h5 class="fw-bold mb-4">RecruitMe</h5>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link active" href="#">Jobs</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Area -->
+  <div class="flex-grow-1">
+    <!-- Topbar -->
+    <div class="topbar">
+      <h5 class="m-0">Student Job Search</h5>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-post">+ Post Job</button>
+
+        <!-- Dropdown menu -->
+        <div class="dropdown">
+          <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Ad
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li class="text-center mb-2">
+              <div class="rounded-circle mx-auto bg-danger-subtle text-danger fw-bold" style="width: 45px; height: 45px; line-height: 45px;">Ad</div>
+              <div class="text-muted small">Employer Admin</div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout/" onclick="logoutUser()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container mt-4">
+      <h3 class="fw-bold mb-1">Jobs</h3>
+      <p class="text-muted mb-4">Check out your job postings & applicant lineup here.</p>
+
+      <!-- Filter Row -->
+      <div class="d-flex gap-2 mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search Job">
+        <select id="statusFilter" class="form-select" style="max-width: 180px;">
+          <option value="">All Status</option>
+          <option value="online">Online</option>
+          <option value="offline">Offline</option>
+        </select>
+      </div>
+
+      <!-- Job list -->
+      <div id="jobList" class="job-box text-center text-muted">
+        Loading jobs...
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bootstrap icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+
+
+<!-- Post Job Modal -->
+<div class="modal fade" id="postJobModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content p-4">
+      <h5 class="modal-title mb-3">Post a New Job</h5>
+
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label">Job Title</label>
+          <input id="job-title" type="text" class="form-control mb-2" placeholder="e.g. Frontend Developer">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Hourly Wage ($)</label>
+          <input id="job-wage" type="number" step="0.01" class="form-control mb-2" placeholder="e.g. 25.50">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Start Date</label>
+          <input id="job-start" type="date" class="form-control mb-2">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">End Date</label>
+          <input id="job-end" type="date" class="form-control mb-2">
+        </div>
+        <div class="col-md-6">
+          <label for="job-location" class="form-label">Location </label>
+          <select id="job-location" class="form-select">
+        <option value="">Please select a location</option>
+        </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Category</label>
+          <select id="job-category" class="form-select mb-2">
+            <option value="">Select Category</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Job Description</label>
+          <textarea id="job-description" class="form-control mb-2" rows="3"></textarea>
+        </div>
+        <!-- Skills -->
+        <div class="col-12 mb-3">
+          <label class="form-label">Skills</label>
+          <div id="skills-container"></div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addSkill()">+ Add Skill</button>
+        </div>
+
+        <!-- Requirements -->
+        <div class="col-12 mb-3">
+          <label class="form-label">Requirements</label>
+          <div id="requirements-container"></div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addRequirement()">+ Add Requirement</button>
+        </div>
+
+      </div>
+
+      <div class="text-end">
+        <button onclick="submitJob()" class="btn btn-danger">Submit Job</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框 -->
+<div class="modal fade" id="applicationsModal" tabindex="-1" aria-labelledby="applicationsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applicationsModalLabel">Applications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="applicationList">
+        <!-- 动态内容 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ✅ 安排面试 Modal -->
+<div class="modal fade" id="interviewModal" tabindex="-1" aria-labelledby="interviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="interviewForm" onsubmit="submitInterview(event)">
+        <div class="modal-header">
+          <h5 class="modal-title" id="interviewModalLabel">Schedule Interview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="interviewAppId" />
+          <div class="mb-3">
+            <label for="interviewTime" class="form-label">Interview Time</label>
+            <input type="datetime-local" class="form-control" id="interviewTime" required />
+          </div>
+          <div class="mb-3">
+            <label for="interviewNote" class="form-label">Interview Note</label>
+            <textarea class="form-control" id="interviewNote" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Confirm</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+</body>
+<script>
+  let isEditMode = false;
+  let currentJobId = null;
+
+document.querySelector('.btn-post').addEventListener('click', () => {
+  isEditMode = false;
+  currentJobId = null;
+  loadLocations();  // 打开模态框时加载数据
+  loadCategory();
+});
+  async function loadJobs() {
+    const search = document.getElementById('searchInput').value;
+    const status = document.getElementById('statusFilter').value;
+
+    const res = await fetch(`/company/jobs/?search=${search}&status=${status}`);
+    const data = await res.json();
+    const container = document.getElementById('jobList');
+
+    if (!data.jobs || data.jobs.length === 0) {
+      container.innerHTML = "<p class='text-muted'>No data available</p>";
+      return;
+    }
+
+    container.innerHTML = data.jobs.map(job => `
+  <div class="text-start border-bottom py-2 d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="mb-1">${job.title}</h6>
+      <small class="text-muted">${job.location} | ${job.status}</small>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-sm btn-outline-secondary" onclick="toggleStatus(${job.id}, '${job.status}')">
+        ${job.status === 'online' ? 'Offline' : 'Online'}
+      </button>
+      <button class="btn btn-sm btn-outline-primary" onclick="editJob(${job.id})">Edit</button>
+      <button class="btn btn-outline-primary btn-sm" onclick="viewApplications(${job.id})">View Applications</button>
+    </div>
+  </div>
+`).join('');
+
+  }
+  async function loadLocations() {
+  const res = await fetch('/company/locations/');
+  const data = await res.json();
+
+  const select = document.getElementById('job-location');
+  select.innerHTML = '<option value="">Please select a location</option>'; // 清空旧数据
+
+  data.forEach(loc => {
+    const option = document.createElement('option');
+    option.value = loc.id;
+    option.textContent = loc.name;
+    select.appendChild(option);
+  });
+}
+async function loadCategory() {
+  const res = await fetch('/company/Category/');
+  const data = await res.json();
+
+  const select = document.getElementById('job-category');
+  select.innerHTML = '<option value="">Please select a category</option>'; // 清空旧数据
+
+  data.forEach(loc => {
+    const option = document.createElement('option');
+    option.value = loc.id;
+    option.textContent = loc.name;
+    select.appendChild(option);
+  });
+}
+
+
+  document.getElementById('searchInput').addEventListener('input', loadJobs);
+  document.getElementById('statusFilter').addEventListener('change', loadJobs);
+
+  window.onload = loadJobs;
+
+  document.querySelector('.btn-post').setAttribute('data-bs-toggle', 'modal');
+  document.querySelector('.btn-post').setAttribute('data-bs-target', '#postJobModal');
+
+  async function submitJob() {
+    console.log(isEditMode)
+    if(isEditMode){
+      await updateJob();
+    }else{
+      await postJob();
+    }
+  }
+  async function postJob() {
+  const job = collectJobData();
+
+  const res = await fetch('/company/postJob/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+    body: JSON.stringify(job)
+  });
+
+  const data = await res.json();
+  alert(data.success ? 'Job posted!' : data.message);
+  if (data.success) location.reload();
+}
+async function updateJob() {
+  const job = collectJobData();
+  const res = await fetch(`/company/jobs/${currentJobId}/edit/`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+    body: JSON.stringify(job)
+  });
+
+  const data = await res.json();
+  alert(data.success ? 'Job updated!' : data.message);
+  if (data.success) location.reload();
+}
+
+  function collectJobData() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const user_id = urlParams.get('user_id');
+
+  const skillInputs = document.querySelectorAll('#skills-container input');
+  const skills = Array.from(skillInputs).map(input => input.value).filter(val => val);
+  const reqInputs = document.querySelectorAll('#requirements-container input');
+  const requirements = Array.from(reqInputs).map(input => input.value).filter(val => val);
+
+  return {
+    user_id,
+    title: document.getElementById('job-title').value,
+    hourly_wage: document.getElementById('job-wage').value,
+    start_date: document.getElementById('job-start').value,
+    end_date: document.getElementById('job-end').value,
+    location_id: document.getElementById('job-location').value,
+    category_id: document.getElementById('job-category').value,
+    description: document.getElementById('job-description').value,
+    skills,
+    requirements
+  };
+}
+  
+  function addSkill(value = '') {
+
+  const container = document.getElementById('skills-container');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'input-group mb-2';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-control';
+  input.placeholder = '+ Add a dot point';
+  input.value = value;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn btn-outline-danger';
+  btn.innerHTML = '<i class="bi bi-x"></i>'; // Bootstrap 图标
+  btn.onclick = () => container.removeChild(wrapper);
+  
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(btn);
+  container.appendChild(wrapper);
+}
+
+function addRequirement(value = '') {
+  const container = document.getElementById('requirements-container');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'input-group mb-2';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-control';
+  input.placeholder = '+ Add a dot point';
+  input.value = value;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn btn-outline-danger';
+  btn.innerHTML = '<i class="bi bi-x"></i>';
+  btn.onclick = () => container.removeChild(wrapper);
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(btn);
+  container.appendChild(wrapper);
+}
+function getCSRFToken() {
+  const cookieValue = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+  return cookieValue ? cookieValue.pop() : '';
+}
+async function toggleStatus(jobId, currentStatus) {
+  const res = await fetch(`/company/jobs/${jobId}/toggle/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken()
+    }
+  });
+  const data = await res.json();
+  if (data.success) {
+    loadJobs(); // 刷新列表
+  } else {
+    alert(data.message || 'Failed to update status.');
+  }
+}
+
+async function editJob(jobId) {
+  isEditMode = true;
+  currentJobId = jobId;
+  await loadLocations();
+  await loadCategory();
+  const res = await fetch(`/company/jobs/${jobId}/`);
+  const data = await res.json();
+
+  document.getElementById('job-title').value = data.title;
+  document.getElementById('job-wage').value = data.hourly_wage;
+  document.getElementById('job-start').value = data.start_date;
+  document.getElementById('job-end').value = data.end_date;
+  document.getElementById('job-description').value = data.description;
+  document.getElementById('job-location').value = data.location_id;
+  document.getElementById('job-category').value = data.category_id;
+
+  document.getElementById('skills-container').querySelectorAll('.input-group').forEach(el => el.remove());
+  document.getElementById('requirements-container').querySelectorAll('.input-group').forEach(el => el.remove());
+
+// 遍历 skills 并插入
+  data.skills.forEach(skill => addSkill(skill));
+
+// 遍历 requirements 并插入
+  data.requirements.forEach(req => addRequirement(req));
+
+  // 填充 skills 和 requirements（可自行写 UI 渲染逻辑）
+  // ...
+
+  // 打开模态框
+  const modal = new bootstrap.Modal(document.getElementById('postJobModal'));
+  modal.show();
+}
+async function logoutUser() {
+  const res = await fetch('/company/logout/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCSRFToken() },
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.location.href = data.redirect;
+  } else {
+    alert("Logout failed.");
+  }
+}
+
+async function viewApplications(jobId) {
+  const res = await fetch(`/company/applications/${jobId}/`);
+  const data = await res.json();
+
+  const list = document.getElementById('applicationList');
+  list.innerHTML = '';
+
+  if (!data.applications || data.applications.length === 0) {
+    list.innerHTML = "<p class='text-muted'>No applications found.</p>";
+  } else {
+    data.applications.forEach(app => {
+      const div = document.createElement('div');
+      div.className = 'border-bottom py-2';
+      let interviewInfo = '';
+  if (app.status === 'interview') {
+    interviewInfo = `
+      <div class="mt-1">
+        <i class="bi bi-calendar-event"></i> Interview Time: <strong>${app.interview_time || 'N/A'}</strong><br/>
+        <i class="bi bi-chat-left-dots"></i> Note: <em>${app.interview_note || 'No notes provided'}</em>
+      </div>
+    `;
+  }
+      div.innerHTML = `
+        <strong>${app.name} (${app.age} yrs)</strong> - ${app.university}, ${app.major}<br/>
+        <a href="${app.cv_link}" target="_blank">View CV</a><br/>
+        Status: <span class="text-info">${app.status}</span><br/>
+        ${interviewInfo}
+        ${renderActionButtons(app.application_id, app.status)}
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById('applicationsModal'));
+  modal.show();
+}
+
+function renderActionButtons(appId, status) {
+  console.log(appId)
+  if (status === 'pending') {
+    return `
+      <button class="btn btn-success btn-sm me-2" onclick="showInterviewModal(${appId}, 'interview')">Schedule Interview</button>
+      <button class="btn btn-danger btn-sm" onclick="updateStatus(${appId}, 'rejected')">Reject</button>
+    `;
+  } else if (status === 'interview') {
+    return `<button class="btn btn-danger btn-sm" onclick="updateStatus(${appId}, 'rejected')">Reject</button>`;
+  } else {
+    return `<span class="text-danger">Rejected</span>`;
+  }
+}
+
+async function updateStatus(appId, newStatus) {
+  const res = await fetch(`/company/update-application-status/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({ id: appId, status: newStatus })
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert('Status updated');
+    viewApplications(data.job_id); // 重新加载该职位的投递列表
+  } else {
+    alert(data.message || 'Failed to update');
+  }
+}
+function showInterviewModal(appId) {
+  document.getElementById('interviewAppId').value = appId;
+  const modal = new bootstrap.Modal(document.getElementById('interviewModal'));
+  modal.show();
+}
+
+async function submitInterview(event) {
+  event.preventDefault();
+
+  const appId = document.getElementById('interviewAppId').value;
+  const interviewTime = document.getElementById('interviewTime').value;
+  const interviewNote = document.getElementById('interviewNote').value;
+
+  const res = await fetch(`/company/applications/${appId}/schedule/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken() // ⬅️ 请确保你有获取 CSRF token 的函数
+    },
+    body: JSON.stringify({
+      interview_time: interviewTime,
+      interview_note: interviewNote
+    })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    alert('Interview scheduled.');
+    location.reload(); // ✅ 刷新以展示更新后的状态
+  } else {
+    alert(data.message || 'Error occurred');
+  }
+}
+
+
+</script>
 </html>
