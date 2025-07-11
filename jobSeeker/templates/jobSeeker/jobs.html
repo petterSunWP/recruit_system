@@ -90,8 +90,21 @@
 
 
   </style>
+  <script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'mi,en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+  }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 </head>
 <body>
+  <div id="google_translate_element" style="position: absolute; top: 10px; right: 20px;"></div>
+
   <div class="container text-center mt-5">
     <h1 class="mb-4">Job search</h1>
     <!-- 搜索栏 -->
@@ -222,10 +235,11 @@ function renderList(data,container){
 
 async function applyNow(jobId,button) {
   const userId = new URLSearchParams(window.location.search).get("user_id");
-  if (!userId) {
-    alert("User not logged in.");
-    return;
-  }
+  if (!userId || userId === 'null') {
+  alert("Please login or register first.");
+  window.location.href = "/";  // 重定向到首页
+  return;
+}
 
   const res = await fetch('/jobseeker/apply/', {
     method: 'POST',

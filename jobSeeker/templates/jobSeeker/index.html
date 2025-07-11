@@ -73,7 +73,7 @@
     <!-- Topbar -->
     <div class="topbar">
       <h5 class="m-0">My Profile</h5>
-      <button class="btn btn-find-job" id="find-job-btn" onclick=findJob()>Find Job</button>
+      <button class="btn btn-find-job" id="find-job-btn">Find Job</button>
     </div>
 
     <!-- Content -->
@@ -125,6 +125,11 @@
 </div>
 
 <script>
+  document.getElementById('find-job-btn').addEventListener('click', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('user_id');
+      window.location.href = `/jobseeker/jobs/?user_id=${userId}`;
+    });
   function showSection(section) {
     document.getElementById('info-section').classList.add('d-none');
     document.getElementById('applications-section').classList.add('d-none');
@@ -202,15 +207,6 @@
   });
 
   window.onload = loadInfo;
-
-  function findJob(){
-    document.getElementById('find-job-btn').addEventListener('click', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get('user_id');
-      window.location.href = `/jobseeker/jobs/?user_id=${userId}`;
-    });
-
-  }
 
   async function loadMyApplications() {
   const urlParams = new URLSearchParams(window.location.search);
